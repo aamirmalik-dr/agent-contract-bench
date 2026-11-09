@@ -66,6 +66,10 @@ Each family is a list of tasks over a shared synthetic document set. Every docum
 
 Both pilots are reported. Pilot 1 is not re-run on its own family.
 
+### v2 round
+
+Both v1 pilots showed the agents guessing file paths instead of searching. One pre-registered rule was added to the shared agent rules (search first, read only paths that search returned, treat `not_found` as a reason to search again), `heldout2` retired to development, and a fresh family, `heldout3` (a fictional cleanroom fab, written after the rule was frozen), was used for the v2 runs with `openai/gpt-4.1-mini` and, as a second model, `anthropic/claude-sonnet-4.6`. The pre-registration is in [v2_preregistration.md](v2_preregistration.md).
+
 `scripts/build_suites.py` generates the suite and evaluator JSON. `scripts/make_fixture_scripts.py` generates the scripted replies used in fixture mode.
 
 ## Known gaps

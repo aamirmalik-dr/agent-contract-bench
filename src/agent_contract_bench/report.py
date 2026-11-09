@@ -13,17 +13,30 @@ import re
 from pathlib import Path
 from typing import Any
 
-MODES = ("fixture", "live_pilot1", "live_pilot2")
-MODE_DIRS = {"fixture": "fixture", "live_pilot1": "live", "live_pilot2": "live_v2"}
+MODES = ("fixture", "live_pilot1", "live_pilot2", "live_v2_mini", "live_v2_sonnet")
+MODE_DIRS = {
+    "fixture": "fixture",
+    "live_pilot1": "live",
+    "live_pilot2": "live_v2",
+    "live_v2_mini": "live_v3",
+    "live_v2_sonnet": "live_v3_sonnet",
+}
+LIVE_ORDER = ("live_v2_mini", "live_v2_sonnet", "live_pilot2", "live_pilot1")
 LIVE_LABELS = {
     "live_pilot1": "live pilot 1 (heldout v1, retired)",
     "live_pilot2": "live pilot 2 (heldout2)",
+    "live_v2_mini": "v2, gpt-4.1-mini (heldout3)",
+    "live_v2_sonnet": "v2, claude-sonnet-4.6 (heldout3)",
 }
 LIVE_NOTES = {
     "live_pilot1": "First live pilot on the original held-out family, run before two harness "
     "fixes (idempotency-key reuse with a different payload was silently deduplicated; search "
     "scored raw token overlap). Its outcomes informed those fixes, so that family retired to "
     "development. Reported as measured.",
+    "live_v2_mini": "v2 round on the fresh heldout3 family with the pre-registered "
+    "search-before-reading rule (contract-prompts-v3). Same model, caps and prices as v1.",
+    "live_v2_sonnet": "v2 round, second model (anthropic/claude-sonnet-4.6) on the same "
+    "heldout3 tasks: the guarded agent and the rule-based baseline, one run.",
     "live_pilot2": "Second live pilot on a fresh held-out family written and frozen after the "
     "fixes. Same model, prompts, caps and prices.",
 }
@@ -135,7 +148,7 @@ def build_evidence(root: Path) -> dict[str, Any]:
             "metrics": data["metrics"],
             "notable_episodes": data["notable"],
         }
-    live_modes = [evidence["modes"][m] for m in ("live_pilot1", "live_pilot2")]
+    live_modes = [evidence["modes"][m] for m in LIVE_ORDER]
     state = "pending" if all(m == "pending" for m in live_modes) else "done"
     evidence["limitations"] = LIMITATIONS + [LIVE_LIMIT[state]]
     evidence["reproduce"] = {
@@ -143,7 +156,11 @@ def build_evidence(root: Path) -> dict[str, Any]:
         " && python -m agent_contract_bench report --update-readme",
         "live_pilot1": "git checkout fe0ac97 && python -m agent_contract_bench evaluate "
         "--config configs/contract_live.yaml --require-live",
-        "live_pilot2": "python -m agent_contract_bench evaluate --config "
+        "live_v2_mini": "python -m agent_contract_bench evaluate --config "
+        "configs/contract_live_v3_mini.yaml --require-live",
+        "live_v2_sonnet": "python -m agent_contract_bench evaluate --config "
+        "configs/contract_live_v3_sonnet.yaml --require-live",
+        "live_pilot2": "git checkout 743dd64 && python -m agent_contract_bench evaluate --config "
         "configs/contract_live_v2.yaml --require-live && python -m agent_contract_bench report "
         "--update-readme",
         "replay": "python -m agent_contract_bench replay --trace reports/example_events.jsonl",
@@ -187,7 +204,7 @@ def results_table(ev: dict[str, Any]) -> str:
             for r in fixture["metrics"]
             if r["arm"] == "baseline"
         ]
-    for mode in ("live_pilot2", "live_pilot1"):
+    for mode in LIVE_ORDER:
         live = ev["modes"][mode]
         if live == "pending":
             lines.append(f"| {LIVE_LABELS[mode]}: pending |" + " |" * 16)

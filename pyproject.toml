@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-contract-bench"
-version = "0.1.0"
+version = "0.2.0"
 description = "Benchmark harness for tool-using LLM agents: capability contracts, deterministic fault injection, prompt-injection scenarios and attempted-versus-executed violation accounting."
 readme = "README.md"
 requires-python = ">=3.11"
