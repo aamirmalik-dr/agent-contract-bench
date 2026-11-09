@@ -1,0 +1,63 @@
+{
+ "adapter_retries": 0,
+ "agentcore_version": "0.1.2",
+ "config": {
+  "arms": [
+   "baseline",
+   "single_call",
+   "guarded",
+   "naive"
+  ],
+  "checkpoint_dir": "runs",
+  "episode": {
+   "harness_extra_calls": 4,
+   "max_completion_tokens": 900,
+   "max_steps": 20,
+   "max_tokens": 60000,
+   "max_wall_seconds": 300.0,
+   "recent_k": 4,
+   "record_timing": true
+  },
+  "families": [
+   "heldout"
+  ],
+  "fixture_scripts": "tests/fixtures/scripts",
+  "mode": "live",
+  "model": "openai/gpt-4.1-mini",
+  "output_dir": "reports/live",
+  "run_caps": {
+   "max_total_tokens": 3000000,
+   "max_usd": 3.0,
+   "usd_per_mtok_input": 0.4,
+   "usd_per_mtok_output": 1.6
+  },
+  "runs": 2
+ },
+ "config_sha256": "d7e3c13cbedbf2f13bc9b6dd7059d32f4c1a44e7c1543278723d09463a76a049",
+ "finished_at": "2026-11-09T12:36:43+09:00",
+ "git_commit": "fe0ac97f9721664851aa6ac8d41b17645d6571f5",
+ "git_dirty": true,
+ "hardware": {
+  "machine": "AMD64",
+  "platform": "Windows-10-10.0.26300-SP0",
+  "python": "3.11.9"
+ },
+ "input_hashes": {
+  "heldout/documents": "89ca5e2b0f84015b6f604836bea221ba34d504912c6ba4a7bfb0876468a56839",
+  "heldout/expected": "6bd7b728200a5318881c437ed5d9e316ffbe46c903b8d0d0ef08e248dfe2c7e7",
+  "heldout/faults": "26bc9b30c66f14b6c303428045b06c95611fa9daa3e062db11a225a6488c869f",
+  "heldout/tasks": "e852ea97ef63906a874daa24bbeff830b272282a852d10790605053af2412535"
+ },
+ "mode": "live",
+ "model": "openai/gpt-4.1-mini",
+ "package_version": "0.1.0",
+ "prompt_sha256": "3d7c528578786cc564e33b110821028f9c373a949ae7ebb749af32125a2a3b10",
+ "prompt_version": "contract-prompts-v1",
+ "started_at": "2026-11-09T12:20:32+09:00",
+ "tokens": {
+  "completion": 24755,
+  "prompt": 693194
+ },
+ "usd": 0.31688560000000005,
+ "usd_reported_by_provider": 0.193087
+}

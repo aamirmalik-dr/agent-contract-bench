@@ -1,0 +1,72 @@
+{
+ "adapter_retries": null,
+ "agentcore_version": "0.1.2",
+ "config": {
+  "arms": [
+   "baseline",
+   "single_call",
+   "guarded",
+   "naive",
+   "guarded_no_path",
+   "guarded_no_approval",
+   "guarded_no_budget"
+  ],
+  "checkpoint_dir": "runs",
+  "episode": {
+   "harness_extra_calls": 4,
+   "max_completion_tokens": 900,
+   "max_steps": 20,
+   "max_tokens": 60000,
+   "max_wall_seconds": 300.0,
+   "recent_k": 4,
+   "record_timing": true
+  },
+  "families": [
+   "dev",
+   "heldout"
+  ],
+  "fixture_scripts": "tests/fixtures/scripts",
+  "mode": "fixture",
+  "model": null,
+  "output_dir": "reports/fixture",
+  "run_caps": {
+   "max_total_tokens": null,
+   "max_usd": null,
+   "usd_per_mtok_input": null,
+   "usd_per_mtok_output": null
+  },
+  "runs": 1
+ },
+ "config_sha256": "c48b91bc3bddc48c50076de8612df5e4ccc8d3ba605d3ccf6c203a599aa8e173",
+ "finished_at": "2026-11-09T12:46:45+09:00",
+ "git_commit": "743dd648bb0ec33edf0c69ae2e08fc02cebd89f9",
+ "git_dirty": false,
+ "hardware": {
+  "machine": "AMD64",
+  "platform": "Windows-10-10.0.26300-SP0",
+  "python": "3.11.9"
+ },
+ "input_hashes": {
+  "dev/documents": "59abbde202325214223707f07dc6f75ebe164c9721c9ae960cca91002838a4fe",
+  "dev/expected": "19b79208eb3e01a55ade6a006e8d714512d74142a5cc948f3721d4a26d83fec3",
+  "dev/faults": "5d4b4b550efcdc875b20dfb1ab56379ee0ee592977885749876bda1e5603f9c4",
+  "dev/script/agent": "f52056398a3fc6d038bc7057c3369d9685a15aab66024e2badb10930a7da85fd",
+  "dev/script/single_call": "be48426a9ce4bac09f61cc4ac4f792dd459bb6305a06d20c1b75b333603f0900",
+  "dev/tasks": "5f7354a5b0213a58bb8fe169ea0c2a398d14debec2bfc1fd6c74e9ddf39a1b17",
+  "heldout/documents": "89ca5e2b0f84015b6f604836bea221ba34d504912c6ba4a7bfb0876468a56839",
+  "heldout/expected": "6bd7b728200a5318881c437ed5d9e316ffbe46c903b8d0d0ef08e248dfe2c7e7",
+  "heldout/faults": "26bc9b30c66f14b6c303428045b06c95611fa9daa3e062db11a225a6488c869f",
+  "heldout/script/agent": "9832e540e77829edea240219bc37045c1191bce30f305905aa932ed2b8a24fed",
+  "heldout/script/single_call": "f48cb926e6cf6fb880457d494950c1a2243c3a8d61f7a1b71c4163dba550c0ec",
+  "heldout/tasks": "e852ea97ef63906a874daa24bbeff830b272282a852d10790605053af2412535"
+ },
+ "mode": "fixture",
+ "model": "none (scripted fixture adapter)",
+ "package_version": "0.1.0",
+ "prompt_sha256": "e23a4f3b22f9eb490148fcbf3cac13c1ee92ee19f935967158df98878b55a1d1",
+ "prompt_version": "contract-prompts-v2",
+ "started_at": "2026-11-09T12:41:31+09:00",
+ "tokens": null,
+ "usd": null,
+ "usd_reported_by_provider": null
+}

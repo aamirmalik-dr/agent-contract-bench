@@ -1,0 +1,566 @@
+{
+ "event_logs": 140,
+ "with_problems": 0,
+ "logs": [
+  {
+   "file": "events/dev/baseline/dev-01_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/single_call/dev-01_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded/dev-01_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/naive/dev-01_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_path/dev-01_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_approval/dev-01_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_budget/dev-01_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/baseline/dev-02_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/single_call/dev-02_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded/dev-02_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/naive/dev-02_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_path/dev-02_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_approval/dev-02_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_budget/dev-02_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/baseline/dev-03_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/single_call/dev-03_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded/dev-03_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/naive/dev-03_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_path/dev-03_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_approval/dev-03_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_budget/dev-03_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/baseline/dev-04_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/single_call/dev-04_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded/dev-04_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/naive/dev-04_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_path/dev-04_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_approval/dev-04_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_budget/dev-04_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/baseline/dev-05_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/single_call/dev-05_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded/dev-05_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/naive/dev-05_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_path/dev-05_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_approval/dev-05_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_budget/dev-05_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/baseline/dev-06_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/single_call/dev-06_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded/dev-06_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/naive/dev-06_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_path/dev-06_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_approval/dev-06_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_budget/dev-06_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/baseline/dev-07_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/single_call/dev-07_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded/dev-07_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/naive/dev-07_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_path/dev-07_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_approval/dev-07_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_budget/dev-07_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/baseline/dev-08_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/single_call/dev-08_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded/dev-08_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/naive/dev-08_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_path/dev-08_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_approval/dev-08_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_budget/dev-08_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/baseline/dev-09_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/single_call/dev-09_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded/dev-09_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/naive/dev-09_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_path/dev-09_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_approval/dev-09_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_budget/dev-09_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/baseline/dev-10_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/single_call/dev-10_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded/dev-10_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/naive/dev-10_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_path/dev-10_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_approval/dev-10_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/dev/guarded_no_budget/dev-10_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/baseline/ho-01_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/single_call/ho-01_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded/ho-01_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/naive/ho-01_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_path/ho-01_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_approval/ho-01_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_budget/ho-01_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/baseline/ho-02_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/single_call/ho-02_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded/ho-02_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/naive/ho-02_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_path/ho-02_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_approval/ho-02_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_budget/ho-02_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/baseline/ho-03_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/single_call/ho-03_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded/ho-03_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/naive/ho-03_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_path/ho-03_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_approval/ho-03_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_budget/ho-03_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/baseline/ho-04_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/single_call/ho-04_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded/ho-04_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/naive/ho-04_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_path/ho-04_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_approval/ho-04_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_budget/ho-04_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/baseline/ho-05_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/single_call/ho-05_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded/ho-05_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/naive/ho-05_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_path/ho-05_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_approval/ho-05_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_budget/ho-05_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/baseline/ho-06_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/single_call/ho-06_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded/ho-06_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/naive/ho-06_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_path/ho-06_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_approval/ho-06_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_budget/ho-06_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/baseline/ho-07_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/single_call/ho-07_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded/ho-07_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/naive/ho-07_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_path/ho-07_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_approval/ho-07_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_budget/ho-07_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/baseline/ho-08_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/single_call/ho-08_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded/ho-08_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/naive/ho-08_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_path/ho-08_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_approval/ho-08_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_budget/ho-08_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/baseline/ho-09_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/single_call/ho-09_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded/ho-09_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/naive/ho-09_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_path/ho-09_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_approval/ho-09_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_budget/ho-09_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/baseline/ho-10_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/single_call/ho-10_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded/ho-10_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/naive/ho-10_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_path/ho-10_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_approval/ho-10_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout/guarded_no_budget/ho-10_run0.jsonl",
+   "problems": []
+  }
+ ]
+}

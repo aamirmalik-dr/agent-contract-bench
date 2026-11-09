@@ -1,0 +1,2 @@
+{"header": {"arm": "baseline", "family": "heldout2", "run": 0, "status": "abstained", "suite_version": "heldout2-v1", "task_id": "h2-09"}}
+{"arguments": {"reason": "the task names no output path under /workspace"}, "calls_used": 1, "decision": "allowed", "enforced": [], "error": null, "executed": true, "fault": null, "hash": "e026f408d32ca918b479deda854bca64d36f34bbc441fa4b7b1b7706bce9e350", "idempotency_key": null, "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000", "seq": 1, "step": 1, "tool": "abstain", "transition": null, "violations": []}
