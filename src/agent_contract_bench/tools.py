@@ -103,7 +103,8 @@ class Harness:
             out, transition = run()
         except EnvError as exc:
             self._log(**common, decision=decision, fault=fault, executed=False, error=exc.code)
-            raise ToolFailure("not_found", exc.message) from None
+            code = "precondition_failed" if exc.code == "idempotency_conflict" else "not_found"
+            raise ToolFailure(code, exc.message) from None
         if fault == "duplicate_hit" and out.get("hits"):
             out = {**out, "hits": [out["hits"][0], *out["hits"]]}
         self._log(
@@ -138,7 +139,9 @@ class WriteArgs(_Args):
     path: str = Field(min_length=1, max_length=200)
     content: str = Field(max_length=4000)
     idempotency_key: str = Field(
-        min_length=1, max_length=64, description="reuse the same key when retrying the same write"
+        min_length=1,
+        max_length=64,
+        description="reuse a key only to retry the identical write; new content needs a new key",
     )
 
 

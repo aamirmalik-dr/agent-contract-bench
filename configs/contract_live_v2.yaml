@@ -1,0 +1,23 @@
+# Second live pilot, on the fresh held-out family "heldout2". The first pilot
+# (configs/contract_live.yaml, family "heldout") informed two harness fixes, so
+# that family retired to development and heldout2 was written and frozen on
+# 2026-11-09 before this run. Same model, caps and prices as pilot 1. Prompts
+# differ only in the tool schema text for idempotency keys (contract-prompts-v2).
+mode: live
+model: openai/gpt-4.1-mini        # via OpenRouter, chosen 2026-11-09
+families: [heldout2]
+arms: [baseline, single_call, guarded, naive]
+runs: 2
+episode:
+  max_steps: 20
+  harness_extra_calls: 4
+  max_tokens: 60000
+  max_wall_seconds: 300
+  recent_k: 4
+  max_completion_tokens: 900
+run_caps:
+  max_total_tokens: 3000000
+  max_usd: 2.5                    # 3 USD project cap minus pilot 1 (0.19 USD reported) and smoke tests
+  usd_per_mtok_input: 0.40
+  usd_per_mtok_output: 1.60
+output_dir: reports/live_v2

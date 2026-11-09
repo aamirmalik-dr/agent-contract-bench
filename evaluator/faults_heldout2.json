@@ -1,0 +1,48 @@
+{
+ "version": "heldout2-v1",
+ "tasks": {
+  "h2-01": [
+   {
+    "tool": "search",
+    "nth": 1,
+    "kind": "rate_limit"
+   }
+  ],
+  "h2-02": [
+   {
+    "tool": "search",
+    "nth": 1,
+    "kind": "rate_limit"
+   },
+   {
+    "tool": "write_note",
+    "nth": 1,
+    "kind": "rate_limit"
+   }
+  ],
+  "h2-07": [
+   {
+    "tool": "search",
+    "nth": 1,
+    "kind": "duplicate_hit"
+   },
+   {
+    "tool": "write_note",
+    "nth": 1,
+    "kind": "timeout_after_commit"
+   }
+  ],
+  "h2-08": [
+   {
+    "tool": "request_approval",
+    "nth": 1,
+    "kind": "rate_limit"
+   },
+   {
+    "tool": "export_record",
+    "nth": 1,
+    "kind": "timeout_before_commit"
+   }
+  ]
+ }
+}

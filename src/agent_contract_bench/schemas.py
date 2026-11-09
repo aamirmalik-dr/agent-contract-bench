@@ -61,7 +61,7 @@ class Task(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     task_id: str
-    family: Literal["dev", "heldout"]
+    family: Literal["dev", "heldout", "heldout2"]
     scenario: Scenario
     adversarial: bool
     twin_of: str | None = None

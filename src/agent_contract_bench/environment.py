@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import posixpath
 import re
 from typing import Any
@@ -88,19 +89,28 @@ class VirtualEnv:
         self.transitions: list[dict[str, Any]] = []
         self._write_keys: dict[str, dict[str, Any]] = {}
         self._export_keys: dict[str, dict[str, Any]] = {}
+        self._write_payloads: dict[str, str] = {}
 
     # ------------------------------------------------------------ reads
 
     def search(self, query: str, limit: int) -> list[dict[str, Any]]:
-        """Token-overlap search over /docs only, deterministic tie-breaking."""
+        """IDF-weighted term match over /docs only, deterministic tie-breaking.
+
+        Each distinct query term found in a document adds its inverse document
+        frequency, so common words such as "the" or "incident" count for little.
+        """
         q = set(_WORD.findall(query.lower()))
+        docs = {
+            path: set(_WORD.findall((doc.title + " " + doc.text).lower()))
+            for path, doc in self.meta.items()
+            if within(path, "/docs")
+        }
+        n = len(docs)
+        idf = {t: math.log((n + 1) / (sum(t in w for w in docs.values()) + 0.5)) for t in q}
         scored = []
-        for path, doc in self.meta.items():
-            if not within(path, "/docs"):
-                continue
-            words = _WORD.findall((doc.title + " " + doc.text).lower())
-            score = sum(1 for w in words if w in q)
-            if score:
+        for path, words in docs.items():
+            score = round(sum(idf[t] for t in q & words), 3)
+            if score > 0:
                 scored.append((-score, path))
         hits = []
         for neg, path in sorted(scored)[:limit]:
@@ -130,9 +140,16 @@ class VirtualEnv:
 
     def write(self, path: str, content: str, key: str) -> tuple[dict[str, Any], dict | None]:
         """Write a file. A repeated idempotency key returns the first result."""
-        if key in self._write_keys:
-            return {**self._write_keys[key], "deduplicated": True}, None
         resolved, _ = resolve_path(path, self.aliases)
+        payload = hashlib.sha256(f"{resolved}\x00{content}".encode()).hexdigest()
+        if key in self._write_keys:
+            if self._write_payloads[key] != payload:
+                raise EnvError(
+                    "idempotency_conflict",
+                    f"idempotency key {key!r} was already used for a different write; "
+                    "nothing was written. Use a new key for new content.",
+                )
+            return {**self._write_keys[key], "deduplicated": True}, None
         self.files[resolved] = content
         transition = {
             "kind": "write",
@@ -144,6 +161,7 @@ class VirtualEnv:
         self.transitions.append(transition)
         out = {"written": resolved, "bytes": len(content.encode()), "deduplicated": False}
         self._write_keys[key] = out
+        self._write_payloads[key] = payload
         return out, transition
 
     def request_approval(self, record_id: str, step: int) -> tuple[dict[str, Any], dict]:
@@ -176,6 +194,12 @@ class VirtualEnv:
     ) -> tuple[dict[str, Any], dict | None]:
         """Send a record to the simulated sink. The sink itself checks nothing."""
         if key in self._export_keys:
+            if self._export_keys[key]["exported"] != record_id:
+                raise EnvError(
+                    "idempotency_conflict",
+                    f"idempotency key {key!r} was already used to export a different record; "
+                    "nothing was exported.",
+                )
             return {**self._export_keys[key], "deduplicated": True}, None
         if record_id not in self.records:
             raise EnvError("not_found", f"no exportable record {record_id}")

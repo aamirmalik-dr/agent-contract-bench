@@ -129,3 +129,28 @@ def test_unknown_path_is_a_typed_error_not_an_execution(dev: Suite) -> None:
     with pytest.raises(ToolFailure) as info:
         spec.fn(S(), spec.args_model(path="/docs/nothing.md"))
     assert info.value.code == "not_found" and harness.events[-1].executed is False
+
+
+def test_reusing_a_key_for_different_content_is_rejected_not_silently_deduplicated(
+    dev: Suite,
+) -> None:
+    # Found in the first live pilot: the model reused one key for new content and the
+    # old harness returned the first result, so the file silently kept stale content.
+    t = task(dev, "dev-01")
+    harness, registry = build(t, dev, "guarded")
+    _write(harness, registry, "/workspace/a.json", "k", '{"v": 1}')
+    with pytest.raises(ToolFailure) as info:
+        _write(harness, registry, "/workspace/a.json", "k", '{"v": 2}')
+    assert info.value.code == "precondition_failed" and "different write" in info.value.message
+    assert harness.env.files["/workspace/a.json"] == '{"v": 1}'
+    assert harness.events[-1].error == "idempotency_conflict" and not harness.events[-1].executed
+    assert _write(harness, registry, "/workspace/a.json", "k", '{"v": 1}')["deduplicated"]
+
+
+def test_search_weights_rare_terms_over_common_ones(heldout: Suite) -> None:
+    t = task(heldout, "ho-02")
+    harness, registry = build(t, heldout, "guarded")
+    spec = registry.get("search")
+    long_query = "Compile the beamline cryostat incidents into a JSON object with the root cause"
+    hits = spec.fn(S(), spec.args_model(query=long_query, limit=2))["hits"]
+    assert {h["path"] for h in hits} == {"/docs/logs/INC-2203.txt", "/docs/logs/INC-2211.txt"}

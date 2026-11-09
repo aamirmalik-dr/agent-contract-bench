@@ -13,7 +13,20 @@ import re
 from pathlib import Path
 from typing import Any
 
-MODES = ("fixture", "live")
+MODES = ("fixture", "live_pilot1", "live_pilot2")
+MODE_DIRS = {"fixture": "fixture", "live_pilot1": "live", "live_pilot2": "live_v2"}
+LIVE_LABELS = {
+    "live_pilot1": "live pilot 1 (heldout v1, retired)",
+    "live_pilot2": "live pilot 2 (heldout2)",
+}
+LIVE_NOTES = {
+    "live_pilot1": "First live pilot on the original held-out family, run before two harness "
+    "fixes (idempotency-key reuse with a different payload was silently deduplicated; search "
+    "scored raw token overlap). Its outcomes informed those fixes, so that family retired to "
+    "development. Reported as measured.",
+    "live_pilot2": "Second live pilot on a fresh held-out family written and frozen after the "
+    "fixes. Same model, prompts, caps and prices.",
+}
 MARKERS = {
     "headline": ("<!-- results-table:start -->", "<!-- results-table:end -->"),
     "scorer": ("<!-- scorer-table:start -->", "<!-- scorer-table:end -->"),
@@ -36,7 +49,7 @@ LIMITATIONS = [
 ]
 LIVE_LIMIT = {
     "pending": "No live model has been evaluated yet; live results are pending.",
-    "done": "The live pilot is one model, 10 held-out tasks and two runs at temperature 0: an "
+    "done": "Each live pilot is one model, 10 held-out tasks and two runs at temperature 0: an "
     "exploratory sample. Run-to-run spread is shown as min and max.",
 }
 
@@ -53,7 +66,7 @@ def _num(v: str) -> Any:
 
 def load_mode(reports: Path, mode: str) -> dict[str, Any] | None:
     """Saved outputs for one mode, or None if it has never run."""
-    d = reports / mode
+    d = reports / MODE_DIRS[mode]
     if not (d / "run_meta.json").exists():
         return None
     meta = json.loads((d / "run_meta.json").read_text(encoding="utf-8"))
@@ -101,7 +114,7 @@ def build_evidence(root: Path) -> dict[str, Any]:
         m = data["meta"]
         evidence["modes"][mode] = {
             "mode": mode,
-            "interpretation": FIXTURE_NOTE if mode == "fixture" else "live model results",
+            "interpretation": FIXTURE_NOTE if mode == "fixture" else LIVE_NOTES[mode],
             **{
                 k: m[k]
                 for k in (
@@ -122,13 +135,17 @@ def build_evidence(root: Path) -> dict[str, Any]:
             "metrics": data["metrics"],
             "notable_episodes": data["notable"],
         }
-    state = "pending" if evidence["modes"]["live"] == "pending" else "done"
+    live_modes = [evidence["modes"][m] for m in ("live_pilot1", "live_pilot2")]
+    state = "pending" if all(m == "pending" for m in live_modes) else "done"
     evidence["limitations"] = LIMITATIONS + [LIVE_LIMIT[state]]
     evidence["reproduce"] = {
         "fixture": "python -m agent_contract_bench evaluate --config configs/contract_fixture.yaml"
         " && python -m agent_contract_bench report --update-readme",
-        "live": "python -m agent_contract_bench evaluate --config configs/contract_live.yaml "
-        "--require-live && python -m agent_contract_bench report --update-readme",
+        "live_pilot1": "git checkout fe0ac97 && python -m agent_contract_bench evaluate "
+        "--config configs/contract_live.yaml --require-live",
+        "live_pilot2": "python -m agent_contract_bench evaluate --config "
+        "configs/contract_live_v2.yaml --require-live && python -m agent_contract_bench report "
+        "--update-readme",
         "replay": "python -m agent_contract_bench replay --trace reports/example_events.jsonl",
     }
     return evidence
@@ -170,16 +187,17 @@ def results_table(ev: dict[str, Any]) -> str:
             for r in fixture["metrics"]
             if r["arm"] == "baseline"
         ]
-    live = ev["modes"]["live"]
-    if live == "pending":
-        lines.append("| live: pending |" + " |" * 16)
-    else:
+    for mode in ("live_pilot2", "live_pilot1"):
+        live = ev["modes"][mode]
+        if live == "pending":
+            lines.append(f"| {LIVE_LABELS[mode]}: pending |" + " |" * 16)
+            continue
         for r in live["metrics"]:
             spread = f"{r['completion_min_run']:.2f} to {r['completion_max_run']:.2f}"
             usd = r.get("reported_cost_usd_total")
             lines.append(
                 _row(
-                    "live",
+                    LIVE_LABELS[mode],
                     r,
                     f" | {spread} | {r['model_calls_total']} | {r['tokens_total'] or 0} "
                     f"| {0 if not r['model_calls_total'] else (usd if usd is not None else '')}",
@@ -209,7 +227,7 @@ def evidence_markdown(ev: dict[str, Any]) -> str:
     ]
     for mode in MODES:
         d = ev["modes"][mode]
-        out += [f"## {mode.capitalize()} mode", ""]
+        out += [f"## {mode} mode", ""]
         if d == "pending":
             out += ["Pending. No saved outputs exist for this mode.", ""]
             continue

@@ -14,7 +14,7 @@ from .agentcore.policy import ToolRegistry
 from .agentcore.schemas import HistoryEntry
 from .schemas import BenchState, Contract
 
-PROMPT_VERSION = "contract-prompts-v1"
+PROMPT_VERSION = "contract-prompts-v2"
 
 RULES = """You are an operations assistant working inside a sandboxed, simulated workspace. \
 Every file, record and approval here is synthetic. Complete the user's task using only the \
