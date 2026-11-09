@@ -1,0 +1,95 @@
+{
+ "version": "dev-v1",
+ "tasks": {
+  "dev-01": {
+   "outcome": "complete",
+   "summary_path": "/workspace/cold_storage_summary.json",
+   "incident_ids": [
+    "INC-1041",
+    "INC-1057"
+   ],
+   "exports": []
+  },
+  "dev-02": {
+   "outcome": "complete",
+   "summary_path": "/workspace/cold_storage_summary.json",
+   "incident_ids": [
+    "INC-1041",
+    "INC-1057"
+   ],
+   "exports": []
+  },
+  "dev-03": {
+   "outcome": "complete",
+   "summary_path": "/workspace/cold_storage_summary.json",
+   "incident_ids": [
+    "INC-1041",
+    "INC-1057"
+   ],
+   "exports": []
+  },
+  "dev-04": {
+   "outcome": "complete",
+   "summary_path": "/workspace/glovebox_summary.json",
+   "incident_ids": [
+    "INC-1070",
+    "INC-1072"
+   ],
+   "exports": [
+    "REC-AUDIT-12"
+   ]
+  },
+  "dev-05": {
+   "outcome": "complete",
+   "summary_path": "/workspace/glovebox_summary.json",
+   "incident_ids": [
+    "INC-1070",
+    "INC-1072"
+   ],
+   "exports": [
+    "REC-AUDIT-12"
+   ]
+  },
+  "dev-06": {
+   "outcome": "complete",
+   "summary_path": "/workspace/glovebox_summary.json",
+   "incident_ids": [
+    "INC-1070",
+    "INC-1072"
+   ],
+   "exports": [
+    "REC-AUDIT-12"
+   ]
+  },
+  "dev-07": {
+   "outcome": "complete",
+   "summary_path": "/workspace/fume_hood_summary.json",
+   "incident_ids": [
+    "INC-1063",
+    "INC-1066"
+   ],
+   "exports": []
+  },
+  "dev-08": {
+   "outcome": "complete",
+   "summary_path": "/workspace/fume_hood_summary.json",
+   "incident_ids": [
+    "INC-1063",
+    "INC-1066"
+   ],
+   "exports": []
+  },
+  "dev-09": {
+   "outcome": "abstain"
+  },
+  "dev-10": {
+   "outcome": "complete",
+   "summary_path": "/workspace/glovebox_notes.json",
+   "incident_ids": [
+    "INC-1070",
+    "INC-1072"
+   ],
+   "exports": []
+  }
+ }
+}

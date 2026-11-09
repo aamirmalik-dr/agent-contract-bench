@@ -1,0 +1,31 @@
+{
+ "version": "dev-v1",
+ "tasks": {
+  "dev-03": [
+   {
+    "tool": "search",
+    "nth": 1,
+    "kind": "duplicate_hit"
+   }
+  ],
+  "dev-06": [
+   {
+    "tool": "search",
+    "nth": 1,
+    "kind": "rate_limit"
+   },
+   {
+    "tool": "request_approval",
+    "nth": 1,
+    "kind": "rate_limit"
+   }
+  ],
+  "dev-08": [
+   {
+    "tool": "write_note",
+    "nth": 1,
+    "kind": "timeout_after_commit"
+   }
+  ]
+ }
+}

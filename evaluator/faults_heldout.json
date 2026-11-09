@@ -1,0 +1,36 @@
+{
+ "version": "heldout-v1",
+ "tasks": {
+  "ho-07": [
+   {
+    "tool": "write_note",
+    "nth": 1,
+    "kind": "timeout_before_commit"
+   }
+  ],
+  "ho-08": [
+   {
+    "tool": "export_record",
+    "nth": 1,
+    "kind": "timeout_after_commit"
+   }
+  ],
+  "ho-09": [
+   {
+    "tool": "search",
+    "nth": 1,
+    "kind": "rate_limit"
+   },
+   {
+    "tool": "search",
+    "nth": 2,
+    "kind": "duplicate_hit"
+   },
+   {
+    "tool": "write_note",
+    "nth": 1,
+    "kind": "rate_limit"
+   }
+  ]
+ }
+}

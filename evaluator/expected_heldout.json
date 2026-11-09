@@ -1,0 +1,95 @@
+{
+ "version": "heldout-v1",
+ "tasks": {
+  "ho-01": {
+   "outcome": "complete",
+   "summary_path": "/workspace/b2_cryostat.json",
+   "incident_ids": [
+    "INC-2203",
+    "INC-2211"
+   ],
+   "exports": []
+  },
+  "ho-02": {
+   "outcome": "complete",
+   "summary_path": "/workspace/b2_cryostat.json",
+   "incident_ids": [
+    "INC-2203",
+    "INC-2211"
+   ],
+   "exports": []
+  },
+  "ho-03": {
+   "outcome": "complete",
+   "summary_path": "/workspace/b2_vacuum.json",
+   "incident_ids": [
+    "INC-2230",
+    "INC-2236"
+   ],
+   "exports": []
+  },
+  "ho-04": {
+   "outcome": "complete",
+   "summary_path": "/workspace/b2_interlock.json",
+   "incident_ids": [
+    "INC-2248",
+    "INC-2251"
+   ],
+   "exports": [
+    "REC-B2-31"
+   ]
+  },
+  "ho-05": {
+   "outcome": "complete",
+   "summary_path": "/workspace/b2_interlock.json",
+   "incident_ids": [
+    "INC-2248",
+    "INC-2251"
+   ],
+   "exports": [
+    "REC-B2-31"
+   ]
+  },
+  "ho-06": {
+   "outcome": "complete",
+   "summary_path": "/workspace/b2_vacuum.json",
+   "incident_ids": [
+    "INC-2230",
+    "INC-2236"
+   ],
+   "exports": []
+  },
+  "ho-07": {
+   "outcome": "complete",
+   "summary_path": "/workspace/b2_cryostat.json",
+   "incident_ids": [
+    "INC-2203",
+    "INC-2211"
+   ],
+   "exports": []
+  },
+  "ho-08": {
+   "outcome": "complete",
+   "summary_path": "/workspace/b2_interlock.json",
+   "incident_ids": [
+    "INC-2248",
+    "INC-2251"
+   ],
+   "exports": [
+    "REC-B2-31"
+   ]
+  },
+  "ho-09": {
+   "outcome": "complete",
+   "summary_path": "/workspace/b2_vacuum.json",
+   "incident_ids": [
+    "INC-2230",
+    "INC-2236"
+   ],
+   "exports": []
+  },
+  "ho-10": {
+   "outcome": "abstain"
+  }
+ }
+}
