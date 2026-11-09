@@ -2,8 +2,10 @@
 
 Reads reports/live (v1 pilot 1), reports/live_v2 (v1 pilot 2),
 reports/live_v3 (v2 round, gpt-4.1-mini) and reports/live_v3_sonnet (v2
-round, second model): task_results.jsonl and the saved event logs. No model
-is called and nothing is estimated; running it twice gives identical files.
+round, second model): task_results.jsonl, the saved event logs and the saved
+traces. Writes each figure to docs/figures/ as SVG and as a 300 dpi PNG, plus
+figure_stats.json with every plotted value and interval. No model is called
+and nothing is estimated; running it twice gives byte-identical files.
 
 Usage: python scripts/make_figures.py [--out docs/figures]
 """
@@ -18,26 +20,17 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import figure_style as fs  # noqa: E402
-import matplotlib.pyplot as plt  # noqa: E402
-from matplotlib.patches import Patch  # noqa: E402
-from matplotlib.ticker import MaxNLocator  # noqa: E402
+import numpy as np  # noqa: E402
+from matplotlib.ticker import MultipleLocator  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
-# (output dir, task family, short group label, second model?)
+# (output dir, task family, label, second model)
 ROUNDS = [
-    ("live", "heldout", "v1 pilot 1\nheldout", False),
-    ("live_v2", "heldout2", "v1 pilot 2\nheldout2", False),
-    ("live_v3", "heldout3", "v2\nheldout3", False),
-    ("live_v3_sonnet", "heldout3", "v2, second model\nheldout3", True),
+    ("live", "heldout", "v1 pilot 1", False),
+    ("live_v2", "heldout2", "v1 pilot 2", False),
+    ("live_v3", "heldout3", "v2", False),
+    ("live_v3_sonnet", "heldout3", "v2", True),
 ]
-SAMPLE = (
-    "Live. v1 pilots and v2: gpt-4.1-mini, 10 tasks x 2 runs.\n"
-    "Second model: claude-sonnet-4.6, 10 tasks x 1 run (hatched)."
-)
-KEY = (
-    "rule: rule-based baseline, no model.  single: single-call planner.\n"
-    "guarded: iterative agent, gates enforced.  naive: the same agent, gates only logged."
-)
 ARMS = ["baseline", "single_call", "guarded", "naive"]
 ARM_TYPE = {
     "baseline": "baseline",
@@ -45,26 +38,27 @@ ARM_TYPE = {
     "guarded": "agent",
     "naive": "ablation",
 }
-ARM_LABEL = {"baseline": "rule", "single_call": "single", "guarded": "guarded", "naive": "naive"}
-FAMILY = {
-    "injected_export": "injection",
-    "injected_read": "injection",
-    "path_traversal": "injection",
-    "alias_escape": "injection",
-    "forged_approval": "forged approval",
-    "timeout_after_commit": "transient fault",
-    "timeout_before_commit": "transient fault",
-    "rate_limit": "transient fault",
-    "duplicate_search": "transient fault",
-    "ambiguous": "ambiguous request",
-    "benign": "benign",
+ARM_NAME = {
+    "baseline": "Rule-based (no model)",
+    "single_call": "Single call",
+    "guarded": "Guarded agent",
+    "naive": "Naive agent",
 }
-FIGURES = [
-    "completion_and_violations.png",
-    "violation_accounting.png",
-    "v2_completion_by_fault_family.png",
-    "agent_failure_modes.png",
-]
+FAMILY = {
+    "injected_export": "Injection",
+    "injected_read": "Injection",
+    "path_traversal": "Injection",
+    "alias_escape": "Injection",
+    "forged_approval": "Forged approval",
+    "timeout_after_commit": "Transient fault",
+    "timeout_before_commit": "Transient fault",
+    "rate_limit": "Transient fault",
+    "duplicate_search": "Transient fault",
+    "ambiguous": "Ambiguous request",
+    "benign": "Benign",
+}
+STEMS = ["fig1_main", "figS1_failure_modes", "figS2_tokens"]
+STATS: dict[str, dict] = {}
 
 
 def load(name: str) -> list[dict]:
@@ -72,10 +66,21 @@ def load(name: str) -> list[dict]:
     return [json.loads(x) for x in path.read_text(encoding="utf-8").splitlines() if x.strip()]
 
 
+def read_jsonl(path: Path) -> list[dict]:
+    return [json.loads(x) for x in path.read_text(encoding="utf-8").splitlines() if x.strip()]
+
+
 def events(name: str, family: str, arm: str, task: str, run: int) -> list[dict]:
     path = ROOT / "reports" / name / "events" / family / arm / f"{task}_run{run}.jsonl"
-    lines = [json.loads(x) for x in path.read_text(encoding="utf-8").splitlines() if x.strip()]
-    return [e for e in lines if "header" not in e]
+    return [e for e in read_jsonl(path) if "header" not in e]
+
+
+def episode_tokens(name: str, family: str, arm: str, task: str, run: int) -> int:
+    """Prompt plus completion tokens of one episode; trace counts are cumulative."""
+    path = ROOT / "reports" / name / "traces" / family / arm / f"{task}_run{run}.jsonl"
+    steps = [e for e in read_jsonl(path) if e.get("event") == "step" and e.get("tokens")]
+    last = steps[-1]["tokens"]
+    return int(last["prompt"] + last["completion"])
 
 
 def by_arm(rows: list[dict]) -> dict[str, list[dict]]:
@@ -85,254 +90,479 @@ def by_arm(rows: list[dict]) -> dict[str, list[dict]]:
     return out
 
 
-def layout(arms_wanted: tuple[str, ...] = tuple(ARMS)) -> list[tuple[float, str, str, bool, str]]:
-    """Bar positions: (x, round dir, family, second model, arm)."""
-    pos, x = [], 0.0
-    for name, family, _, second in ROUNDS:
-        present = by_arm(load(name))
-        for arm in arms_wanted:
-            if arm in present:
-                pos.append((x, name, family, second, arm))
-                x += 1
-        x += 0.9
-    return pos
+def rate(rows: list[dict], key: str, tag: str) -> tuple[float, float, float]:
+    k = sum(int(bool(r[key])) for r in rows)
+    n = len(rows)
+    p, lo, hi = fs.wilson(k, n)
+    STATS[tag] = {"k": k, "n": n, "rate": p, "wilson95": [lo, hi]}
+    return p, lo, hi
 
 
-def label_groups(ax, pos, y: float = -0.2) -> None:
-    """Arm names as rotated ticks, round names centred under each group."""
-    ax.set_xticks([p[0] for p in pos], [ARM_LABEL[p[4]] for p in pos], rotation=30, ha="right")
-    for name, _, title, _ in ROUNDS:
-        xs = [p[0] for p in pos if p[1] == name]
-        if xs:
-            ax.text(
-                sum(xs) / len(xs),
-                y,
-                title,
-                ha="center",
-                va="top",
-                fontsize=10,
-                transform=ax.get_xaxis_transform(),
-            )
-    ax.set_xlim(pos[0][0] - 0.7, pos[-1][0] + 1.3)
+def per_task(rows: list[dict], key: str) -> dict[str, float]:
+    acc: dict[str, list[float]] = defaultdict(list)
+    for r in rows:
+        acc[r["task_id"]].append(float(bool(r[key])))
+    return {t: float(np.mean(v)) for t, v in acc.items()}
 
 
-def per_run_rate(rs: list[dict], key: str) -> list[float]:
-    runs = sorted({r["run"] for r in rs})
-    return [
-        sum(r[key] for r in rs if r["run"] == i) / sum(1 for r in rs if r["run"] == i) for i in runs
+def paired(rows_a: list[dict], rows_b: list[dict], key: str, tag: str) -> None:
+    a, b = per_task(rows_a, key), per_task(rows_b, key)
+    tasks = sorted(set(a) & set(b))
+    m, lo, hi = fs.paired_bootstrap([a[t] for t in tasks], [b[t] for t in tasks])
+    STATS[tag] = {"mean_difference": m, "bootstrap95": [lo, hi], "n_tasks": len(tasks)}
+
+
+def unit_axis(ax, axis: str = "x", step: float = 0.5) -> None:
+    ticks = list(np.arange(0, 1 + 1e-9, step))
+    names = [f"{t:g}" for t in ticks]
+    if axis == "x":
+        ax.set_xlim(-0.04, 1.04)
+        ax.spines["bottom"].set_bounds(0, 1)
+        ax.set_xticks(ticks, names)
+        ax.xaxis.set_minor_locator(MultipleLocator(0.1))
+    else:
+        ax.set_ylim(-0.04, 1.04)
+        ax.spines["left"].set_bounds(0, 1)
+        ax.set_yticks(ticks, names)
+
+
+# Figure 1 -------------------------------------------------------------------
+
+
+def rate_rows() -> list[tuple[float, str, str, bool, str]]:
+    """Rows for the arm x round dot plots: (y, arm, dir, second model, sub-label)."""
+    rows, y = [], 0.0
+    for arm in ARMS:
+        for name, _, label, second in ROUNDS:
+            if arm in ("single_call", "naive") and second:
+                continue
+            rows.append((y, arm, name, second, "v2, Sonnet" if second else label))
+            y += 1
+        y += 0.6
+    return rows
+
+
+def panel_tradeoff(fig, data, top: float) -> None:
+    metrics = [
+        ("completed", "Tasks completed", 1.0),
+        ("executed_violations", "Executed forbidden\neffect", 0.5),
     ]
+    rows = rate_rows()
+    height = (rows[-1][0] + 1) * 2.75
+    left0, width, gap = 41.0, 28.0, 5.0
+    for j, (key, title, xmax) in enumerate(metrics):
+        ax = fs.axes_mm(fig, left0 + j * (width + gap), top, width, height)
+        for y, arm, name, second, _ in rows:
+            tag = "completion" if key == "completed" else "executed_episodes"
+            p, lo, hi = rate(data[name][arm], key, f"{tag}/{name}/{arm}")
+            fs.dot_interval(ax, y, p, lo, hi, ARM_TYPE[arm], second)
+        ax.set_xlim(-0.04 * xmax, xmax * 1.04)
+        ax.spines["bottom"].set_bounds(0, xmax)
+        ax.set_xticks([0, xmax / 2, xmax])
+        ax.xaxis.set_minor_locator(MultipleLocator(0.1 if xmax == 1 else 0.05))
+        fs.tidy_ticks(ax, "x")
+        ax.set_ylim(rows[-1][0] + 0.6, -0.6)
+        ax.set_yticks([r[0] for r in rows])
+        if j == 0:
+            ax.set_yticklabels([r[4] for r in rows])
+            for arm in ARMS:
+                ys = [r[0] for r in rows if r[1] == arm]
+                ax.text(
+                    -0.62,
+                    (ys[0] + ys[-1]) / 2,
+                    ARM_NAME[arm].replace(" (", "\n("),
+                    ha="right",
+                    va="center",
+                    transform=ax.get_yaxis_transform(),
+                )
+        else:
+            ax.set_yticklabels([])
+        ax.set_title(title)
+        ax.set_xlabel("Fraction of episodes")
+    fs.panel_label(fig, "a", 1.5, top - 6.0)
 
 
-def completion_and_violations(out: Path) -> None:
-    fig, (top, bottom) = plt.subplots(
-        2, 1, figsize=(fs.WIDTH, 8.2), sharex=True, gridspec_kw={"height_ratios": [1.6, 1]}
-    )
-    pos = layout()
-    for x, name, _, second, arm in pos:
-        rs = by_arm(load(name))[arm]
-        k, n = sum(r["completed"] for r in rs), len(rs)
-        runs = per_run_rate(rs, "completed")
-        top.bar(x, k / n, width=0.7, **fs.bar_kwargs(ARM_TYPE[arm], second))
-        if len(runs) > 1:
-            fs.points(top, x, runs)
-        top.text(x, max(k / n, *runs) + 0.03, f"{k}/{n}", ha="center", va="bottom", fontsize=10)
-        v = sum(r["executed_violations"] for r in rs)
-        bottom.bar(x, v, width=0.7, **fs.bar_kwargs(ARM_TYPE[arm], second))
-        bottom.text(x, v + 0.1, str(v), ha="center", va="bottom", fontsize=10)
-    top.set_ylim(0, 1.18)
-    top.set_yticks([0, 0.25, 0.5, 0.75, 1.0])
-    top.set_ylabel("Share of tasks completed")
-    bottom.set_ylim(0, 4.5)
-    bottom.yaxis.set_major_locator(MaxNLocator(integer=True))
-    bottom.set_ylabel("Executed forbidden\neffects (count)")
-    label_groups(bottom, pos, y=-0.36)
-    top.set_title(
-        "Task completion (top) and executed forbidden effects (bottom) by arm\n"
-        f"{SAMPLE}\nBars: all episodes. Points: individual runs.",
-        loc="left",
-        fontsize=11,
-    )
-    fig.text(0.01, 0.01, KEY, fontsize=10, color=fs.MUTED, va="bottom")
-    fig.subplots_adjust(left=0.11, right=0.99, top=0.86, bottom=0.21, hspace=0.12)
-    fs.save(fig, out / "completion_and_violations.png")
-
-
-def violation_accounting(out: Path) -> None:
-    fig, ax = plt.subplots(figsize=(fs.WIDTH, 5.8))
-    segments = [
-        ("blocked by the monitor", fs.OUTCOME["correct"]),
-        ("not blocked, no forbidden effect", fs.OUTCOME["abstained"]),
-        ("executed forbidden effect", fs.OUTCOME["wrong"]),
+def panel_accounting(fig, data, top: float) -> None:
+    rows, labels, heads, y = [], [], [], 0.0
+    for arm in ARMS:
+        heads.append((y, ARM_NAME[arm]))
+        y += 1.0
+        for name, _, label, second in ROUNDS:
+            if arm in data[name]:
+                rows.append((y, name, arm))
+                labels.append("v2, Sonnet" if second else label)
+                y += 1
+        y += 0.35
+    left, width, height = 143.0, 36.0, 58.0
+    ax = fs.axes_mm(fig, left, top, width, height)
+    segs = [
+        ("correct", "Blocked by the gate"),
+        ("partial", "Not blocked, no effect"),
+        ("wrong", "Executed"),
     ]
-    pos = layout()
-    for x, name, _, second, arm in pos:
-        rs = by_arm(load(name))[arm]
+    for yy, name, arm in rows:
+        rs = data[name][arm]
         a = sum(r["attempted_violation_calls"] for r in rs)
         b = sum(r["blocked_calls"] for r in rs)
         e = sum(r["executed_violations"] for r in rs)
-        bottom = 0
-        for v, (_, colour) in zip([b, max(a - b - e, 0), e], segments, strict=True):
+        STATS[f"violation_calls/{name}/{arm}"] = {"attempted": a, "blocked": b, "executed": e}
+        start = 0
+        for v, (key, _) in zip([b, max(a - b - e, 0), e], segs, strict=True):
             if v:
-                ax.bar(
-                    x,
+                ax.barh(
+                    yy,
                     v,
-                    width=0.7,
-                    bottom=bottom,
-                    color=colour,
-                    edgecolor=fs.EDGE,
-                    lw=0.8,
-                    hatch=fs.SECOND_MODEL_HATCH if second else None,
+                    left=start,
+                    height=0.66,
+                    color=fs.OUTCOME[key],
+                    edgecolor="white",
+                    linewidth=0.4,
                 )
-                ax.text(
-                    x,
-                    bottom + v / 2,
-                    str(v),
-                    ha="center",
-                    va="center",
-                    fontsize=10,
-                    color="white" if colour == fs.OUTCOME["wrong"] else fs.TEXT,
-                )
-            bottom += v
-        ax.text(x, bottom + 0.12, str(a), ha="center", va="bottom", fontsize=10, color=fs.MUTED)
-    label_groups(ax, pos, y=-0.25)
-    ax.set_ylabel("Tool calls flagged by the monitor")
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-    ax.set_ylim(0, 7.2)
-    ax.legend(
-        handles=[Patch(facecolor=c, edgecolor=fs.EDGE, label=k) for k, c in segments],
-        loc="upper center",
-        bbox_to_anchor=(0.5, -0.42),
+            start += v
+        ax.text(start + 0.15, yy, str(a), va="center", ha="left", color=fs.MUTED)
+    for yy, txt in heads:
+        ax.text(
+            -0.95,
+            yy,
+            txt,
+            va="center",
+            ha="left",
+            color=fs.MUTED,
+            transform=ax.get_yaxis_transform(),
+        )
+    ax.set_yticks([r[0] for r in rows], labels)
+    ax.set_ylim(y - 0.35 - 0.4, -0.6)
+    ax.set_xlim(0, 7)
+    ax.xaxis.set_major_locator(MultipleLocator(2))
+    ax.xaxis.set_minor_locator(MultipleLocator(1))
+    ax.set_xlabel("Flagged tool calls (count)")
+    key = fs.axes_mm(fig, left - 34, top + height + 9.0, width + 34, 4)
+    key.set_axis_off()
+    key.legend(
+        handles=fs.outcome_handles(segs),
+        loc="center",
         ncol=3,
-        frameon=False,
+        handlelength=1.0,
+        columnspacing=0.8,
+        handletextpad=0.3,
     )
-    ax.set_title(
-        "Attempted, blocked and executed contract violations by arm\n"
-        f"{SAMPLE}\nBar height and grey number: attempted calls the monitor flagged.",
-        loc="left",
-        fontsize=11,
-    )
-    fig.subplots_adjust(left=0.08, right=0.99, top=0.8, bottom=0.36)
-    fs.save(fig, out / "violation_accounting.png")
+    fs.panel_label(fig, "b", 103.0, top - 3.0)
 
 
-def completion_by_family(out: Path) -> None:
-    families = ["benign", "injection", "forged approval", "transient fault", "ambiguous request"]
-    cols = [("live_v3", arm, f"{ARM_LABEL[arm]}\nmini") for arm in ARMS] + [
-        ("live_v3_sonnet", arm, f"{ARM_LABEL[arm]}\nsonnet") for arm in ("baseline", "guarded")
+def panel_families(fig, data, top: float) -> None:
+    cols = [("live_v3", arm, ARM_NAME[arm].replace(" (no model)", "")) for arm in ARMS]
+    cols += [
+        ("live_v3_sonnet", arm, ARM_NAME[arm].replace(" (no model)", ""))
+        for arm in ("baseline", "guarded")
     ]
-    fig, ax = plt.subplots(figsize=(fs.WIDTH, 4.8))
+    fams = sorted(set(FAMILY.values()))
+    totals = {}
+    for fam in fams:
+        k = n = 0
+        for name, arm, _ in cols:
+            sub = [r for r in data[name][arm] if FAMILY[r["scenario"]] == fam]
+            k += sum(r["completed"] for r in sub)
+            n += len(sub)
+        totals[fam] = (k, n)
+    fams.sort(key=lambda f: (-totals[f][0] / totals[f][1], f))
+    tile_w, tile_h, left = 8.6, 5.6, 33.0
+    width, height = len(cols) * tile_w, len(fams) * tile_h
+    ax = fs.axes_mm(fig, left, top + 8.0, width, height)
+    fs.bare(ax)
     for j, (name, arm, _) in enumerate(cols):
-        rs = by_arm(load(name))[arm]
-        for i, fam in enumerate(families):
-            sub = [r for r in rs if FAMILY[r["scenario"]] == fam]
+        for i, fam in enumerate(fams):
+            sub = [r for r in data[name][arm] if FAMILY[r["scenario"]] == fam]
             k, n = sum(r["completed"] for r in sub), len(sub)
             share = k / n
+            STATS[f"completion_by_family/{name}/{arm}/{fam}"] = {"k": k, "n": n}
             ax.add_patch(
-                plt.Rectangle(
-                    (j, i),
-                    1,
-                    1,
-                    facecolor=plt.cm.Blues(0.12 + 0.75 * share),
+                fs.plt.Rectangle(
+                    (j * tile_w, i * tile_h),
+                    tile_w,
+                    tile_h,
+                    facecolor=fs.SEQUENTIAL(share),
                     edgecolor="white",
-                    linewidth=2,
+                    linewidth=0.8,
                 )
             )
             ax.text(
-                j + 0.5,
-                i + 0.5,
+                (j + 0.5) * tile_w,
+                (i + 0.5) * tile_h,
                 f"{k}/{n}",
                 ha="center",
                 va="center",
-                fontsize=10,
-                color="white" if share > 0.55 else fs.TEXT,
+                color="white" if share > 0.7 else fs.INK,
             )
-    ax.set_xlim(0, len(cols))
-    ax.set_ylim(len(families), 0)
-    ax.set_xticks([j + 0.5 for j in range(len(cols))], [c[2] for c in cols], fontsize=10)
-    ax.set_yticks([i + 0.5 for i in range(len(families))], families)
-    ax.axvline(4, color=fs.EDGE, linewidth=1.5)
-    ax.grid(False)
-    for s in ax.spines.values():
-        s.set_visible(False)
-    ax.set_title(
-        "Tasks completed by scenario family, live, v2 held-out family heldout3 (10 tasks)\n"
-        "mini: gpt-4.1-mini, 2 runs. sonnet: claude-sonnet-4.6, 1 run. "
-        "Cell: completed / episodes.",
-        loc="left",
-        fontsize=11,
+    ax.set_xlim(0, width)
+    ax.set_ylim(height, 0)
+    ax.set_yticks([(i + 0.5) * tile_h for i in range(len(fams))], fams)
+    ax.set_xticks(
+        [(j + 0.5) * tile_w for j in range(len(cols))],
+        [c[2] for c in cols],
+        rotation=40,
+        ha="right",
+        rotation_mode="anchor",
     )
-    fig.text(0.01, 0.01, KEY, fontsize=10, color=fs.MUTED, va="bottom")
-    fig.subplots_adjust(left=0.18, right=0.99, top=0.85, bottom=0.25)
-    fs.save(fig, out / "v2_completion_by_fault_family.png")
+    for txt, a, b in (("gpt-4.1-mini\n2 runs", 0, 4), ("claude-sonnet-4.6\n1 run", 4, 6)):
+        ax.plot(
+            [a * tile_w + 0.6, b * tile_w - 0.6],
+            [-1.2, -1.2],
+            color=fs.MUTED,
+            linewidth=0.6,
+            clip_on=False,
+        )
+        ax.text((a + b) / 2 * tile_w, -1.9, txt, ha="center", va="bottom", color=fs.MUTED)
+    mx = fs.axes_mm(fig, left + width + 2.0, top + 8.0, 12, height)
+    for i, fam in enumerate(fams):
+        k, n = totals[fam]
+        p, lo, hi = fs.wilson(k, n)
+        STATS[f"completion_by_family/all_arms/{fam}"] = {
+            "k": k,
+            "n": n,
+            "rate": p,
+            "wilson95": [lo, hi],
+        }
+        mx.plot([lo, hi], [(i + 0.5) * tile_h] * 2, color=fs.MUTED, linewidth=0.8)
+        mx.plot(
+            [p], [(i + 0.5) * tile_h], marker="o", markersize=3.2, color=fs.INK, linestyle="none"
+        )
+    mx.set_ylim(height, 0)
+    mx.set_yticks([])
+    mx.spines["left"].set_visible(False)
+    mx.set_xlim(0, 1)
+    mx.set_xticks([0, 1])
+    fs.tidy_ticks(mx, "x")
+    mx.set_xlabel("Completed,\nall columns\n(fraction)")
+    fs.panel_label(fig, "c", 1.5, top - 1.5)
 
+
+def panel_dumbbell(fig, data, top: float) -> None:
+    left, width, height = 128.0, 38.0, 36.0
+    ax = fs.axes_mm(fig, left, top + 8.0, width, height)
+    for i, arm in enumerate(ARMS):
+        t = ARM_TYPE[arm]
+        p1, lo1, hi1 = rate(data["live_v2"][arm], "completed", f"completion/live_v2/{arm}")
+        p2, lo2, hi2 = rate(data["live_v3"][arm], "completed", f"completion/live_v3/{arm}")
+        y1, y2 = i - 0.17, i + 0.17
+        ax.plot(
+            [p1, p2], [y1, y2], color=fs.CONTEXT, linewidth=1.6, zorder=1, solid_capstyle="butt"
+        )
+        ax.plot([lo1, hi1], [y1, y1], color=fs.MUTED, linewidth=0.7, zorder=2)
+        ax.plot([lo2, hi2], [y2, y2], **fs.line_kw(t, width=0.7))
+        grey = fs.marker_kw(t)
+        grey.update(markerfacecolor=fs.CONTEXT, markeredgecolor=fs.MUTED)
+        ax.plot([p1], [y1], **{**grey, "clip_on": False})
+        ax.plot([p2], [y2], **{**fs.marker_kw(t), "clip_on": False})
+        k1 = STATS[f"completion/live_v2/{arm}"]["k"]
+        k2 = STATS[f"completion/live_v3/{arm}"]["k"]
+        ax.text(
+            1.06,
+            i,
+            f"{k1} to {k2}",
+            transform=ax.get_yaxis_transform(),
+            va="center",
+            ha="left",
+            color=fs.MUTED,
+        )
+        paired(
+            data["live_v3"][arm],
+            data["live_v3"]["baseline"],
+            "completed",
+            f"paired_vs_rule_based/live_v3/{arm}",
+        )
+    paired(
+        data["live_v3_sonnet"]["guarded"],
+        data["live_v3_sonnet"]["baseline"],
+        "completed",
+        "paired_vs_rule_based/live_v3_sonnet/guarded",
+    )
+    ax.set_yticks(range(len(ARMS)), [ARM_NAME[a] for a in ARMS])
+    ax.set_ylim(len(ARMS) - 0.5, -0.5)
+    unit_axis(ax, "x", 0.25)
+    fs.tidy_ticks(ax, "x")
+    ax.set_xlabel("Tasks completed (fraction)")
+    ax.text(
+        0,
+        1.03,
+        "Upper: v1 pilot 2 (grey). Lower: v2.",
+        transform=ax.transAxes,
+        ha="left",
+        va="bottom",
+        color=fs.MUTED,
+    )
+    fs.panel_label(fig, "d", 103.0, top - 1.5)
+
+
+def figure1(data, out: Path) -> list[Path]:
+    fig = fs.figure(fs.FULL_WIDTH, 140)
+    panel_tradeoff(fig, data, top=9.0)
+    panel_accounting(fig, data, top=6.0)
+    panel_families(fig, data, top=85.0)
+    panel_dumbbell(fig, data, top=85.0)
+    return fs.save(fig, out, "fig1_main")
+
+
+# Supplementary --------------------------------------------------------------
 
 MODES = [
-    ("completed", fs.OUTCOME["correct"]),
-    ("finished, task incomplete", fs.OUTCOME["wrong"]),
-    ("read a guessed path, then abstained", fs.OUTCOME["failed"]),
-    ("abstained for another reason", fs.OUTCOME["abstained"]),
+    ("correct", "Completed"),
+    ("wrong", "Finished, task incomplete"),
+    ("failed", "Read a guessed path, then abstained"),
+    ("abstained", "Abstained for another reason"),
 ]
 
 
 def failure_mode(name: str, family: str, r: dict) -> str:
     if r["completed"]:
-        return "completed"
+        return "correct"
     ev = events(name, family, r["arm"], r["task_id"], r["run"])
     guessed = any(e["tool"] == "read_document" and e["error"] == "not_found" for e in ev)
     if r["status"] == "abstained":
-        return "read a guessed path, then abstained" if guessed else "abstained for another reason"
-    return "finished, task incomplete"
+        return "failed" if guessed else "abstained"
+    return "wrong"
 
 
-def agent_failure_modes(out: Path) -> None:
-    fig, ax = plt.subplots(figsize=(fs.WIDTH, 5.8))
-    pos = layout(("guarded", "naive"))
-    for x, name, family, second, arm in pos:
+def agent_rows(data) -> list[tuple[float, str, str, str, bool, str, str | None]]:
+    """(y, dir, family, arm, second, arm label, group header or None)."""
+    rows, y = [], 0.0
+    for name, family, label, second in ROUNDS:
+        model = "claude-sonnet-4.6, 1 run" if second else "gpt-4.1-mini, 2 runs"
+        first = True
+        for arm in ("guarded", "naive"):
+            if arm in data[name]:
+                head = f"{label}, {model}" if first else None
+                if first:
+                    y += 1.0
+                rows.append((y, name, family, arm, second, ARM_NAME[arm], head))
+                first = False
+                y += 1
+        y += 0.3
+    return rows
+
+
+def figure_s1(data, out: Path) -> list[Path]:
+    rows = agent_rows(data)
+    fig = fs.figure(fs.FULL_WIDTH, 62)
+    height = (rows[-1][0] + 0.7) * 3.4
+    ax = fs.axes_mm(fig, 40, 5, 92, height)
+    cx = fs.axes_mm(fig, 138, 5, 28, height)
+    for a in (ax, cx):
+        a.set_ylim(rows[-1][0] + 0.6, -0.4)
+    for y, name, family, arm, second, _, head in rows:
+        rs = data[name][arm]
         counts: dict[str, int] = defaultdict(int)
-        for r in by_arm(load(name))[arm]:
+        for r in rs:
             counts[failure_mode(name, family, r)] += 1
-        bottom = 0
-        for mode, colour in MODES:
-            v = counts[mode]
-            if v:
-                ax.bar(
-                    x,
-                    v,
-                    width=0.7,
-                    bottom=bottom,
-                    color=colour,
-                    edgecolor=fs.EDGE,
-                    lw=0.8,
-                    hatch=fs.SECOND_MODEL_HATCH if second else None,
+        STATS[f"agent_outcomes/{name}/{arm}"] = dict(counts) | {"n": len(rs)}
+        start = 0.0
+        for key, _ in MODES:
+            c = counts[key]
+            if c:
+                ax.barh(
+                    y,
+                    c / len(rs),
+                    left=start,
+                    height=0.62,
+                    color=fs.OUTCOME[key],
+                    edgecolor="white",
+                    linewidth=0.4,
                 )
                 ax.text(
-                    x,
-                    bottom + v / 2,
-                    str(v),
+                    start + c / len(rs) / 2,
+                    y,
+                    str(c),
                     ha="center",
                     va="center",
-                    fontsize=10,
-                    color=fs.TEXT if mode == "abstained for another reason" else "white",
+                    color=fs.OUTCOME_TEXT[key],
                 )
-            bottom += v
-    label_groups(ax, pos, y=-0.25)
-    ax.set_ylabel("Episodes")
-    ax.set_ylim(0, 21)
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-    ax.legend(
-        handles=[Patch(facecolor=c, edgecolor=fs.EDGE, label=k) for k, c in MODES],
-        loc="upper center",
-        bbox_to_anchor=(0.5, -0.42),
-        ncol=2,
-        frameon=False,
+            start += c / len(rs)
+        if second:
+            ax.add_patch(
+                fs.plt.Rectangle(
+                    (0, y - 0.31),
+                    1,
+                    0.62,
+                    fill=False,
+                    edgecolor=fs.INK,
+                    linewidth=0.75,
+                    linestyle=(0, (2.2, 1.2)),
+                    zorder=3,
+                )
+            )
+        p, lo, hi = fs.wilson(counts["correct"], len(rs))
+        fs.dot_interval(cx, y, p, lo, hi, ARM_TYPE[arm], second)
+        cx.text(
+            1.08, y, f"n = {len(rs)}", va="center", ha="left", transform=cx.get_yaxis_transform()
+        )
+        if head:
+            ax.text(
+                -0.39,
+                y - 1.0,
+                head,
+                va="center",
+                ha="left",
+                color=fs.MUTED,
+                transform=ax.get_yaxis_transform(),
+            )
+    ax.set_yticks([r[0] for r in rows], [r[5] for r in rows])
+    ax.tick_params(axis="y", length=0)
+    ax.spines["left"].set_visible(False)
+    unit_axis(ax, "x", 0.25)
+    fs.tidy_ticks(ax, "x")
+    ax.set_xlabel("Episodes (fraction)")
+    cx.set_yticks([])
+    cx.spines["left"].set_visible(False)
+    unit_axis(cx, "x", 0.5)
+    cx.set_xlabel("Completed (fraction)")
+    fs.panel_label(fig, "a", 1.5, 1.5)
+    fs.panel_label(fig, "b", 133.0, 1.5)
+    key = fs.axes_mm(fig, 0, 5 + height + 11, fs.FULL_WIDTH, 4)
+    key.set_axis_off()
+    key.legend(
+        handles=fs.outcome_handles(MODES), loc="center", ncol=4, handlelength=1.0, columnspacing=1.2
     )
-    ax.set_title(
-        "Agent episode outcomes before (v1) and after (v2) the search-first rule\n" f"{SAMPLE}",
-        loc="left",
-        fontsize=11,
-    )
-    fig.subplots_adjust(left=0.08, right=0.99, top=0.82, bottom=0.4)
-    fs.save(fig, out / "agent_failure_modes.png")
+    return fs.save(fig, out, "figS1_failure_modes")
+
+
+def figure_s2(data, out: Path) -> list[Path]:
+    rows = [(r[0] * 1.3, *r[1:]) for r in agent_rows(data)]
+    fig = fs.figure(fs.FULL_WIDTH, 90)
+    height = (rows[-1][0] + 1.3) * 5.0
+    ax = fs.axes_mm(fig, 40, 3, 112, height)
+    ax.set_ylim(rows[-1][0] + 0.75, -0.75)
+    for y, name, family, arm, second, _, head in rows:
+        vals = [
+            episode_tokens(name, family, arm, r["task_id"], r["run"]) / 1000
+            for r in sorted(data[name][arm], key=lambda r: (r["task_id"], r["run"]))
+        ]
+        q1, med, q3 = np.percentile(vals, [25, 50, 75])
+        STATS[f"tokens_per_episode_thousands/{name}/{arm}"] = {
+            "n": len(vals),
+            "median": float(med),
+            "q1": float(q1),
+            "q3": float(q3),
+            "min": float(min(vals)),
+            "max": float(max(vals)),
+        }
+        fs.raincloud(ax, y, vals, ARM_TYPE[arm], second)
+        if head:
+            ax.text(
+                -0.32,
+                y - 1.3 * 0.85,
+                head,
+                va="center",
+                ha="left",
+                color=fs.MUTED,
+                transform=ax.get_yaxis_transform(),
+            )
+    ax.set_yticks([r[0] for r in rows], [r[5] for r in rows])
+    ax.tick_params(axis="y", length=0)
+    ax.spines["left"].set_visible(False)
+    ax.set_xlim(0, 35)
+    ax.xaxis.set_major_locator(MultipleLocator(5))
+    ax.xaxis.set_minor_locator(MultipleLocator(1))
+    ax.set_xlabel("Model tokens per episode (thousands)")
+    return fs.save(fig, out, "figS2_tokens")
 
 
 def main(argv: list[str] | None = None) -> list[Path]:
@@ -340,12 +570,28 @@ def main(argv: list[str] | None = None) -> list[Path]:
     parser.add_argument("--out", type=Path, default=ROOT / "docs" / "figures")
     args = parser.parse_args(argv)
     fs.apply()
-    args.out.mkdir(parents=True, exist_ok=True)
-    completion_and_violations(args.out)
-    violation_accounting(args.out)
-    completion_by_family(args.out)
-    agent_failure_modes(args.out)
-    return [args.out / f for f in FIGURES]
+    data = {name: by_arm(load(name)) for name, *_ in ROUNDS}
+    paths = figure1(data, args.out)
+    paths += figure_s1(data, args.out)
+    paths += figure_s2(data, args.out)
+    stats = args.out / "figure_stats.json"
+    rounded = {
+        k: {f: round(v, 4) if isinstance(v, float) else v for f, v in d.items()}
+        for k, d in sorted(STATS.items())
+    }
+    for d in rounded.values():
+        for f, v in d.items():
+            if isinstance(v, list):
+                d[f] = [round(x, 4) for x in v]
+    meta = {
+        "interval": "Wilson 95% for rates; paired percentile bootstrap 95% for differences",
+        "bootstrap_resamples": fs.N_BOOT,
+        "seed": fs.SEED,
+        "resampling_unit": "task",
+    }
+    text = json.dumps({"method": meta, "values": rounded}, indent=1)
+    stats.write_text(text + "\n", encoding="utf-8")
+    return paths + [stats]
 
 
 if __name__ == "__main__":
