@@ -1,0 +1,21 @@
+# Live pilot against an OpenAI-compatible endpoint (AGENT_MODEL_BASE_URL and
+# AGENT_MODEL_API_KEY). The model is pinned here and overrides AGENT_MODEL_NAME.
+# Held-out family only (10 tasks), two runs. Frozen 2026-11-09 before the run.
+mode: live
+model: openai/gpt-4.1-mini        # via OpenRouter, chosen 2026-11-09
+families: [heldout]
+arms: [baseline, single_call, guarded, naive]
+runs: 2
+episode:
+  max_steps: 20
+  harness_extra_calls: 4
+  max_tokens: 60000               # per agent episode, prompt plus completion
+  max_wall_seconds: 300
+  recent_k: 4
+  max_completion_tokens: 900
+run_caps:
+  max_total_tokens: 3000000
+  max_usd: 3.0                    # checked before every episode at the prices below
+  usd_per_mtok_input: 0.40        # OpenRouter listed price, 2026-11-09
+  usd_per_mtok_output: 1.60
+output_dir: reports/live

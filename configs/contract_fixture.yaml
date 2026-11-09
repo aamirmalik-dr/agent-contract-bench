@@ -1,0 +1,15 @@
+# Offline evaluation with scripted fixture replies. No model is called.
+# Frozen 2026-11-09 before any live run.
+mode: fixture
+families: [dev, heldout]
+arms: [baseline, single_call, guarded, naive, guarded_no_path, guarded_no_approval, guarded_no_budget]
+runs: 1
+fixture_scripts: tests/fixtures/scripts
+episode:
+  max_steps: 20
+  harness_extra_calls: 4      # harness cap = contract max_tool_calls + 4; the monitor judges the contract
+  max_tokens: 60000
+  max_wall_seconds: 300
+  recent_k: 4
+  max_completion_tokens: 900
+output_dir: reports/fixture
