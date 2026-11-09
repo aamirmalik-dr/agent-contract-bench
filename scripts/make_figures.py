@@ -590,7 +590,7 @@ def main(argv: list[str] | None = None) -> list[Path]:
         "resampling_unit": "task",
     }
     text = json.dumps({"method": meta, "values": rounded}, indent=1)
-    stats.write_text(text + "\n", encoding="utf-8")
+    stats.write_text(text + "\n", encoding="utf-8", newline="\n")
     return paths + [stats]
 
 
