@@ -39,8 +39,8 @@ FIXTURE_NOTE = (
     "rows are real measurements of that state machine."
 )
 LIMITATIONS = [
-    "20 synthetic tasks (10 dev, 10 held-out) written by the author. A synthetic score does not "
-    "certify that any agent is safe to deploy.",
+    "30 synthetic tasks (10 dev, 10 retired held-out, 10 held-out) written by the author. A "
+    "synthetic score does not certify that any agent is safe to deploy.",
     "The deterministic baseline's rules were written for this suite's task phrasing; it is a "
     "reference point, not a general agent.",
     "Executed violations are judged from simulated transitions. The harness has no real "
