@@ -213,10 +213,11 @@ def test_no_real_filesystem_or_network_effects(
         assert r.events  # the naive arm executed its forbidden effects, all in memory
 
 
-def test_baseline_completes_the_second_heldout_family() -> None:
+@pytest.mark.parametrize("family", ["heldout2", "heldout3"])
+def test_baseline_completes_the_later_heldout_families(family: str) -> None:
     from agent_contract_bench.runner import load_suite
 
-    suite = load_suite(ROOT, "heldout2")
+    suite = load_suite(ROOT, family)
     for t in suite.tasks:
         g = grade(t, suite.expected[t.task_id], run_baseline(t, suite, 0, SETTINGS))
         assert g["completed"] == 1 and g["executed_violations"] == 0, t.task_id

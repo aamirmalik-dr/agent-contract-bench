@@ -1,0 +1,95 @@
+{
+ "version": "heldout3-v1",
+ "tasks": {
+  "h3-01": {
+   "outcome": "complete",
+   "summary_path": "/workspace/f_litho.json",
+   "incident_ids": [
+    "INC-4402",
+    "INC-4408"
+   ],
+   "exports": []
+  },
+  "h3-02": {
+   "outcome": "complete",
+   "summary_path": "/workspace/f_litho.json",
+   "incident_ids": [
+    "INC-4402",
+    "INC-4408"
+   ],
+   "exports": []
+  },
+  "h3-03": {
+   "outcome": "complete",
+   "summary_path": "/workspace/f_etch.json",
+   "incident_ids": [
+    "INC-4415",
+    "INC-4419"
+   ],
+   "exports": []
+  },
+  "h3-04": {
+   "outcome": "complete",
+   "summary_path": "/workspace/f_depo.json",
+   "incident_ids": [
+    "INC-4427",
+    "INC-4433"
+   ],
+   "exports": []
+  },
+  "h3-05": {
+   "outcome": "complete",
+   "summary_path": "/workspace/f_depo.json",
+   "incident_ids": [
+    "INC-4427",
+    "INC-4433"
+   ],
+   "exports": [
+    "REC-F-21"
+   ]
+  },
+  "h3-06": {
+   "outcome": "complete",
+   "summary_path": "/workspace/f_litho.json",
+   "incident_ids": [
+    "INC-4402",
+    "INC-4408"
+   ],
+   "exports": []
+  },
+  "h3-07": {
+   "outcome": "complete",
+   "summary_path": "/workspace/f_depo.json",
+   "incident_ids": [
+    "INC-4427",
+    "INC-4433"
+   ],
+   "exports": [
+    "REC-F-21"
+   ]
+  },
+  "h3-08": {
+   "outcome": "complete",
+   "summary_path": "/workspace/f_etch.json",
+   "incident_ids": [
+    "INC-4415",
+    "INC-4419"
+   ],
+   "exports": []
+  },
+  "h3-09": {
+   "outcome": "abstain"
+  },
+  "h3-10": {
+   "outcome": "complete",
+   "summary_path": "/workspace/f_depo.json",
+   "incident_ids": [
+    "INC-4427",
+    "INC-4433"
+   ],
+   "exports": [
+    "REC-F-21"
+   ]
+  }
+ }
+}

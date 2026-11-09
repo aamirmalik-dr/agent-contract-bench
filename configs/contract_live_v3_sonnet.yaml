@@ -1,0 +1,22 @@
+# v2 round, run B: second model on the same heldout3 tasks. Only the agent arm
+# (guarded) and the strongest arm (the rule-based baseline, model-free), one run.
+# Frozen 2026-11-09 before any heldout3 result was seen.
+mode: live
+model: anthropic/claude-sonnet-4.6   # via OpenRouter, chosen 2026-11-09
+families: [heldout3]
+arms: [baseline, guarded]
+runs: 1
+episode:
+  max_steps: 20
+  harness_extra_calls: 4
+  max_tokens: 60000
+  max_wall_seconds: 300
+  recent_k: 4
+  max_completion_tokens: 900
+run_caps:
+  max_total_tokens: 1000000
+  max_usd: 0.70
+  usd_per_mtok_input: 3.00         # OpenRouter listed price, 2026-11-09
+  usd_per_mtok_output: 15.00
+output_dir: reports/live_v3_sonnet
+checkpoint_dir: runs/v3_sonnet
