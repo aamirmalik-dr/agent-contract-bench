@@ -30,3 +30,7 @@ Completion; attempted, blocked and executed violations; injection success; false
 - B: `anthropic/claude-sonnet-4.6` (3.00 / 15.00 USD per Mtok), arms guarded (the agent arm) and baseline (the strongest arm, 20/20 in both v1 pilots; model-free, so it is included as the reference), 1 run, max_usd 0.70.
 
 No change of any kind after seeing v2 results.
+
+## Correction (2026-11-09, after the v2 runs, while drawing figures)
+
+The evidence line for fix 1 overstates one count: in pilot 2, 12 (guarded) and 13 (naive) episodes read a guessed path and got `not_found`, and 9 and 10 of those episodes then abstained (the other 3 in each arm finished). The fix and the frozen metrics are unchanged.
