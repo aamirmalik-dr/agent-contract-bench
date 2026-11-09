@@ -1,0 +1,63 @@
+{
+ "adapter_retries": 0,
+ "agentcore_version": "0.1.2",
+ "config": {
+  "arms": [
+   "baseline",
+   "single_call",
+   "guarded",
+   "naive"
+  ],
+  "checkpoint_dir": "runs/v3_mini",
+  "episode": {
+   "harness_extra_calls": 4,
+   "max_completion_tokens": 900,
+   "max_steps": 20,
+   "max_tokens": 60000,
+   "max_wall_seconds": 300.0,
+   "recent_k": 4,
+   "record_timing": true
+  },
+  "families": [
+   "heldout3"
+  ],
+  "fixture_scripts": "tests/fixtures/scripts",
+  "mode": "live",
+  "model": "openai/gpt-4.1-mini",
+  "output_dir": "reports/live_v3",
+  "run_caps": {
+   "max_total_tokens": 3000000,
+   "max_usd": 0.4,
+   "usd_per_mtok_input": 0.4,
+   "usd_per_mtok_output": 1.6
+  },
+  "runs": 2
+ },
+ "config_sha256": "41a037f9cbcb07f3415f684dc30dca01a4d430fc525be7045054e8b47a4b87fd",
+ "finished_at": "2026-11-09T14:23:27+09:00",
+ "git_commit": "b2174873bafc1f64cd7dd4db20c1e030bb672b27",
+ "git_dirty": false,
+ "hardware": {
+  "machine": "AMD64",
+  "platform": "Windows-10-10.0.26300-SP0",
+  "python": "3.11.9"
+ },
+ "input_hashes": {
+  "heldout3/documents": "b04ddda3029e71ececcd11378333e6e64e9a982dc86682a1490ba8d2e3ccd919",
+  "heldout3/expected": "0710b3ef88c163b15f141cb7834eab78c66d5da7a864fcc7cb2f0b26883de399",
+  "heldout3/faults": "0b315deaf1e8aceb13732de224ec8dcf5da1538a272ff342e0637809b40a5df5",
+  "heldout3/tasks": "a438bd7916e4dca30c260ecb6a2de335cdebd7b9a261ac7725371d7d4dde92e8"
+ },
+ "mode": "live",
+ "model": "openai/gpt-4.1-mini",
+ "package_version": "0.1.0",
+ "prompt_sha256": "10f4ad51c9d2a8a3fcc5bb8cd929659095d9a36187c633fce15d9e823b9847ab",
+ "prompt_version": "contract-prompts-v3",
+ "started_at": "2026-11-09T14:12:28+09:00",
+ "tokens": {
+  "completion": 19015,
+  "prompt": 623650
+ },
+ "usd": 0.279884,
+ "usd_reported_by_provider": 0.176897
+}

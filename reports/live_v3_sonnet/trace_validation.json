@@ -1,0 +1,86 @@
+{
+ "event_logs": 20,
+ "with_problems": 0,
+ "logs": [
+  {
+   "file": "events/heldout3/baseline/h3-01_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout3/guarded/h3-01_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout3/baseline/h3-02_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout3/guarded/h3-02_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout3/baseline/h3-03_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout3/guarded/h3-03_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout3/baseline/h3-04_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout3/guarded/h3-04_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout3/baseline/h3-05_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout3/guarded/h3-05_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout3/baseline/h3-06_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout3/guarded/h3-06_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout3/baseline/h3-07_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout3/guarded/h3-07_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout3/baseline/h3-08_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout3/guarded/h3-08_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout3/baseline/h3-09_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout3/guarded/h3-09_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout3/baseline/h3-10_run0.jsonl",
+   "problems": []
+  },
+  {
+   "file": "events/heldout3/guarded/h3-10_run0.jsonl",
+   "problems": []
+  }
+ ]
+}
