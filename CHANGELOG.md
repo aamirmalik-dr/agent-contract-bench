@@ -17,7 +17,7 @@ v2 round, pre-registered in `docs/v2_preregistration.md`:
 
 Figures:
 - `scripts/make_figures.py` draws every figure from saved task results, event logs and traces only.
-- The current set is publication-style: Figure 1 (completion and executed-effect rates, flagged-call accounting, completion by fault family, v1 to v2 dumbbell), Figure S1 (agent failure modes) and Figure S2 (tokens per episode).
+- The current set: Figure 1 (completion and executed-effect rates, flagged-call accounting, completion by fault family, v1 to v2 dumbbell), Figure S1 (agent failure modes) and Figure S2 (tokens per episode).
   - Exported as SVG and 300 dpi PNG.
   - Wilson intervals; paired task-level bootstrap for differences.
   - Every plotted value is in `docs/figures/figure_stats.json`.
